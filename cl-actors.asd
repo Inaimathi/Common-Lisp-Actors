@@ -5,6 +5,9 @@
 ;;;; @author Naveen Sundar G. <naveensundarg@gmail.com>
 ;;;; @date   Thu Apr 5 2012
 ;;;; @brief asdf-install package file for cl-actors
+;;;; @author Inaimathi <leo.zovic@gmail.com>
+;;;; @date   Jup 25 2012
+;;;; @brief queue system and output queues
 ;;;;===========================================================================
 
 (defpackage #:cl-actors-asd (:use #:asdf #:cl))
@@ -16,7 +19,9 @@
   :licence     "BSD"
   :description ""
   :depends-on (:bordeaux-threads)
+  :serial t
   :components ((:file "package")
-               (:file "actors" :depends-on ("package"))))
+	       (:file "queue")
+               (:file "actors")))
 
 

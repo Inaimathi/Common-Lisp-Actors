@@ -1,131 +1,85 @@
 (in-package #:cl-actors)
 
-;; ----------------------------------------------------------------------------
-(defclass actor()
+(defclass actor ()
   ((name :initarg :name
          :initform (error ":name must be specified")
-         :accessor name
-         :documentation "Hold the name of actor")
+         :accessor name)
    (behavior :initarg :behavior
-         :initform (error ":behav must be specified")
-         :accessor behavior
-         :documentation "Behavior")
-   (messages :initform '()
-         :accessor messages
-         :documentation "Message stream sent to actor")
-   (lock :initform (bt:make-lock)
-         :accessor lock
-         :documentation
-         "The lock is used when adding a message to the message queue")
-   (cv :initarg :cv
-         :initform (bt:make-condition-variable)
-         :accessor cv
-         :documentation "conditional variable used by the thread")
+	     :initform (error ":behav must be specified")
+	     :accessor behavior
+	     :documentation "Behavior")
+
+   (in :initform (make-queue) :accessor in
+       :documentation "Queue of incoming messages")
+   (out :initform (make-queue 50)
+	:documentation "Queue of outgoing messages")
+   (err :initform (make-queue 10)
+	:documentation "Queue of error/debug messages")
+
    thread))
 
-;; ----------------------------------------------------------------------------
-(defmethod initialize-instance :after((self actor) &key)
+(defmethod initialize-instance :after ((self actor) &key)
   "Uses the main functiona name to create a thread"
   (with-slots (name thread) self
-    (setf thread
-          (bt:make-thread #'(lambda() (main self))
-                          :name name))))
+    (setf thread 
+	  (bt:make-thread #'(lambda() (main self)) 
+			  :name name))))
 
-;; ----------------------------------------------------------------------------
 (defmethod send ((self actor) &rest message)
-  "
-Creates a message sending thread which
-1. Holds lock to the message (queue)
-2. Appends messages (queue) with incoming message
-3. Releases lock
-4. Notifies the waiting thread that there is a message
-"
-  (with-slots (messages lock cv) self
-    (bt:make-thread #'(lambda ()
-                        (with-lock-held (lock)
-                          (setf messages (nconc messages (list message))))
-                        (condition-notify cv)))
-    (values)))
+  "Creates a message sending thread to push a new message into the in` queue of the target actor."
+  (bt:make-thread 
+   (lambda () (enqueue message (in self))))
+  (values))
 
-;; ----------------------------------------------------------------------------
-;; (defun stop-actor (actor) (destroy-thread (get-thread actor)))
 (defmethod stop-actor ((self actor))
   "Stops the actor thread"
-  (with-slots (thread) self
-    (destroy-thread  thread)))
+  (with-slots (thread) self (destroy-thread thread)))
 
-;; ----------------------------------------------------------------------------
-;; (defun get-thread (actor) (first actor))
-(defmethod get-thread ((self actor))
-  "Returns the handle of a thread"
-  (with-slots (thread) self
-    thread))
+;; I think that this should be more of an internal function 
+;; than a method (experiment with funcallable-standard-class) 
+;;;; -Naveen Sundar G.
 
-;; ----------------------------------------------------------------------------
-;; The main which is started as a thread from the constructor I think that this
-;; should be more of an internal function than a method (experiment with
-;; funcallable-standard-class)
-(defmethod main((self actor))
-  (with-slots (lock cv (behav behavior) messages) self
+;; No opinion 
+;;;; -Inaimathi
+(defmethod main ((self actor))
+  "The main which is started as a thread from the constructor."
+  (with-slots (behavior in) self
     (loop
-       (thread-yield)
-       (with-lock-held (lock)
-         (if (not (null messages))
-             (setf behav (apply behav
-                                (pop messages)))
-             (condition-wait cv lock ))
-         (unless behav (return))))))
+      (let ((res (apply behavior (dequeue in))))
+	(unless res (return))))))
 
-;; ----------------------------------------------------------------------------
-;; Create a behavior that can be attached to any actor
-(defmacro behav (state vars  &body body)
+;; Not sure whether the below would benefit from
+;;  1. automatically adding a next call after ,@body
+;;  2. automatically sending the result of ,@body to the out queue
+;;;; -Inaimathi
+(defmacro behav (state vars &body body)
+  "Create a behavior that can be attached to any actor."
   `(let ,state
-     (labels ((me ,(append vars `(&key self  (next #'me next-supplied-p)))
+     (labels ((me ,(append vars `(&key self (next #'me next-supplied-p)))
                 (setf next (curry next :self self))
-             x   ,@body))
+		x ,@body))
        #'me)))
 
-;; ----------------------------------------------------------------------------
-;; Macro for creating actors with the behavior specified by body
+;; Same concerns as above (in fact, I'm not entirely clear on why
+;; defactor doesn't simply call behav, since that seems to be the point)
+;;;; -Inaimathi
 (defmacro defactor (name state vars &body body)
+  "Macro for creating actors with the behavior specified by body"
   `(defun ,name (&key (self) ,@state)
      (labels ((me ,(append vars `(&key (next #'me next-supplied-p)))
-                (if next-supplied-p
-                    (setf next (curry next :self self)))
+                (when next-supplied-p 
+		  (setf next (curry next :self self)))
                 ,@body))
-       (setf self (make-actor #'me ,(string name))) self)))
+       (setf self (make-actor #'me ,(string name))) 
+       self)))
 
-;; ----------------------------------------------------------------------------
-;; The shell of an actor
 (defun make-actor (behav name)
+  "The shell of an actor"
   (make-instance 'actor
                  :name (concatenate 'string "Actor: " name)
                  :behavior behav))
 
-;; ----------------------------------------------------------------------------
-(defun if-single (x)
-  (if (eq (length x) 1)
-      (car x)
-      x))
-
-;; ----------------------------------------------------------------------------
-(defun sink (&rest args)
-  (declare (ignore args)) #'sink)
-
-;; ----------------------------------------------------------------------------
-;; Currying.
 (defun curry (f &rest args)
+  "Simple currying implementation."
   (lambda (&rest rem)
-    (apply f (append rem args) )))
-
-;; ----------------------------------------------------------------------------
-;; Easy priting to repl from threads.
-(defun pr (x)
-  (print x *standard-output*)
-  (format t "~%"))
-
-;; ----------------------------------------------------------------------------
-;; A printing actor
-(defactor printer ()
-    (x)
-  (pr x) next)
+    (apply f (append rem args))))

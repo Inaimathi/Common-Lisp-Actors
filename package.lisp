@@ -8,11 +8,7 @@
 (in-package #:cl-user)
 
 (defpackage #:cl-actors
-  (:use #:cl
-        #:bordeaux-threads)
-  (:export :defactor
-           :next
-           :behav
-           :send
-           :stop-actor
-           :printer))
+  (:use #:cl #:bordeaux-threads)
+  (:export 
+   #:defactor #:self #:next #:send #:stop-actor #:behav
+   #:make-queue #:enqueue #:dequeue #:len #:messages))
