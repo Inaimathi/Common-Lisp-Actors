@@ -35,13 +35,13 @@
     (condition-notify flag)
     messages))
 
+;; A timeout, or maybe a non-blocking version might be useful here
+;;;; -Inaimathi
 (defmethod dequeue ((queue message-queue))
-  "Pops a message from the given queue."
+  "Pops a message from the given queue in a thread-safe way.
+If the target queue is empty, blocks until a message arrives."
   (with-slots (messages lock flag len) queue 
-    (loop
-      (thread-yield)
-      (with-lock-held (lock)
-	(when messages
-	  (decf len) 
-	  (return (pop messages)))
-	(condition-wait flag lock)))))
+    (with-lock-held (lock)
+      (unless messages (condition-wait flag lock))
+      (decf len)
+      (pop messages))))

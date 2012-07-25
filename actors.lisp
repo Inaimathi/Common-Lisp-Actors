@@ -44,9 +44,7 @@
 (defmethod main ((self actor))
   "The main which is started as a thread from the constructor."
   (with-slots (behavior in) self
-    (loop
-      (let ((res (apply behavior (dequeue in))))
-	(unless res (return))))))
+    (loop while (apply behavior (dequeue in)))))
 
 ;; Not sure whether the below would benefit from
 ;;  1. automatically adding a next call after ,@body
