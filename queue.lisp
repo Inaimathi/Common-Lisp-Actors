@@ -37,11 +37,21 @@
 
 ;; A timeout, or maybe a non-blocking version might be useful here
 ;;;; -Inaimathi
-(defmethod dequeue ((queue message-queue))
+(defmethod dequeue ((queue message-queue) &optional (timeout 0))
   "Pops a message from the given queue in a thread-safe way.
 If the target queue is empty, blocks until a message arrives."
   (with-slots (messages lock flag len) queue 
+    (with-timeout (timeout)
+      (with-lock-held (lock)
+	(unless messages (condition-wait flag lock))
+	(decf len)
+	(pop messages)))))
+
+(defmethod dequeue-no-hang ((queue message-queue))
+  "Pops a message from the given queue in a thread-safe way.
+If the target queue is empty, returns NIL."
+  (with-slots (messages lock flag len) queue
     (with-lock-held (lock)
-      (unless messages (condition-wait flag lock))
-      (decf len)
-      (pop messages))))
+      (when messages
+	(decf len)
+	(pop messages)))))
