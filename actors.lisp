@@ -19,7 +19,7 @@
    thread))
 
 (defmethod initialize-instance :after ((self actor) &key)
-  "Uses the main functiona name to create a thread"
+  "Uses the main function name to create a thread"
   (with-slots (name thread) self
     (setf thread 
 	  (bt:make-thread #'(lambda() (main self)) 
@@ -40,6 +40,7 @@
 ;;;; -Naveen Sundar G.
 
 ;; No opinion 
+;; Although I guess it's simple enough to just inline in initialize-instance now...
 ;;;; -Inaimathi
 (defmethod main ((self actor))
   "The main which is started as a thread from the constructor."
