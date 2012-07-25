@@ -39,7 +39,8 @@
 ;;;; -Inaimathi
 (defmethod dequeue ((queue message-queue) &optional (timeout 0))
   "Pops a message from the given queue in a thread-safe way.
-If the target queue is empty, blocks until a message arrives."
+If the target queue is empty, blocks until a message arrives.
+If timeout is not zero, errors after timeout."
   (with-slots (messages lock flag len) queue 
     (with-timeout (timeout)
       (with-lock-held (lock)

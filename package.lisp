@@ -11,4 +11,5 @@
   (:use #:cl #:bordeaux-threads)
   (:export 
    #:defactor #:self #:next #:send #:stop-actor #:behav
-   #:make-queue #:enqueue #:dequeue #:len #:messages))
+   #:make-queue #:enqueue #:dequeue #:dequeue-no-hang 
+                #:len #:messages))
