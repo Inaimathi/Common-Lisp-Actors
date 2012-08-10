@@ -62,7 +62,7 @@
 
 (defactor catcher () (message))
 
-(defmethod send-receive ((self actor) message)
+(defmethod send-receive ((self actor) message &optional (timeout 0))
   "Sends a message to an actor, then blocks waiting for a response.
 This method is intended to allow non-actor systems to interface with a network of actors.
 The actor it sends to should expect to be handed a return target,
@@ -71,4 +71,4 @@ can chain calls, but the initial thread will block until a response arrives)."
   (let ((tmp (catcher)))
     (send tmp nil)
     (send self tmp message)
-    (car (dequeue (in ret)))))
+    (car (dequeue (in tmp) timeout))))
