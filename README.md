@@ -7,16 +7,16 @@ This is a simple and easy to use Actor system in Common Lisp.
 An small manual can be found at : 
 http://www.cs.rpi.edu/~govinn/actors.pdf
 
-1. Creating an actor class or template
+### Creating an actor class or template
 
     (defactor Actor-Class (state) (message-vars)
        behavior)
 
-2. Creating an actor instance 
+### Creating an actor instance 
 
     (setq my-actor (Actor-Class (:state-var_1 value_1 ... :state-var_n value_n)))
 
-3. Sending a message
+### Sending a message
 
     (send my-actor message_args)
 
@@ -27,7 +27,8 @@ http://www.cs.rpi.edu/~govinn/actors.pdf
 
 # Examples
 
-1. A ticker: Keeps printing out a count every 2 seconds, starting from 0 and incrementing it every 2 seconds. 
+### A ticker
+###### Keeps printing out a count every 2 seconds, starting from 0 and incrementing it every 2 seconds. 
 
     ; create the ticker template
     (defactor ticker ((counter 0)) (m) 
@@ -46,7 +47,8 @@ http://www.cs.rpi.edu/~govinn/actors.pdf
     ; to stop use
     (stop-actor t1)
 
-2. A print actor: Prints the message which was sent to it. A very useful utility actor. 
+### A print actor
+###### Prints the message which was sent to it. A very useful utility actor. 
 
     ; create the actor template
     (defactor print-actor (stream) (val) 
@@ -59,7 +61,8 @@ http://www.cs.rpi.edu/~govinn/actors.pdf
     ; send values for printing
     (send printer "hello, world")
 
-3. A factorial computing actor : The name says it all :)
+### A factorial computing actor
+###### The name says it all :)
 
     ; create the template
     (defactor fact ((temp 1)) (n cust) 
@@ -76,7 +79,8 @@ http://www.cs.rpi.edu/~govinn/actors.pdf
     ; send a value
     (send f 4 print-actor)
 
-4. A nagger for fun : Works only in Mac OS X. Keeps saying out aloud "please work" every 10 seconds :)
+### A nagger for fun 
+###### Works only in Mac OS X. Keeps saying out aloud "please work" every 10 seconds :)
 
     (defactor nagger () () 
        (sleep 10)
