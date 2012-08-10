@@ -21,10 +21,14 @@
 	   (lambda () (loop while (apply behavior (dequeue in))))
 	   :name name))))
 
-(defmethod send ((self actor) &rest message)
-  "Creates a message sending thread to push a new message into the IN queue of the target actor."
-  (bt:make-thread (lambda () (enqueue message (in self))))
+(defmethod send ((self message-queue) &rest message)
+  "Creates a message sending thread to push a new message into the target message-queue."
+  (bt:make-thread (lambda () (enqueue message self)))
   (values))
+
+(defmethod send ((self actor) &rest message)
+  "`send`s a message to the IN quque of the target actor."
+  (apply #'send (in self) message))
 
 (defmethod stop-actor ((self actor))
   "Stops the actor thread"
@@ -60,15 +64,12 @@
   (lambda (&rest rem)
     (apply f (append rem args))))
 
-(defactor catcher () (message))
-
 (defmethod send-receive ((self actor) message &optional (timeout 0))
   "Sends a message to an actor, then blocks waiting for a response.
 This method is intended to allow non-actor systems to interface with a network of actors.
 The actor it sends to should expect to be handed a return target,
 that target should eventually be sent a response message (not necessarily right away; the receiver
 can chain calls, but the initial thread will block until a response arrives)."
-  (let ((tmp (catcher)))
-    (send tmp nil)
-    (send self tmp message)
-    (car (dequeue (in tmp) timeout))))
+  (let ((q (make-queue)))
+    (send self q message)
+    (car (dequeue q timeout))))
