@@ -14,7 +14,7 @@ http://www.cs.rpi.edu/~govinn/actors.pdf
 
 ### Creating an actor instance 
 
-    (setq my-actor (Actor-Class (:state-var_1 value_1 ... :state-var_n value_n)))
+    (defparameter my-actor (Actor-Class (:state-var_1 value_1 ... :state-var_n value_n)))
 
 ### Sending a message
 
