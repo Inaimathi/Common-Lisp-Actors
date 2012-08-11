@@ -1,7 +1,9 @@
 This is a simple and easy to use Actor system in Common Lisp. 
 
-# Set-Up
-1. Requires Bordeaux threads. http://common-lisp.net/project/bordeaux-threads/ 2. Just load actors.lisp and start using it. 
+# Requirements
+
+- Requires a threaded Common Lisp (Thoroughly tested in vanilla SBCL; CLISP users will need to enable experimental features)
+- Requires Bordeaux threads. http://common-lisp.net/project/bordeaux-threads/ 
 
 # Usage 
 An small manual can be found at : 
@@ -27,26 +29,6 @@ http://www.cs.rpi.edu/~govinn/actors.pdf
 
 # Examples
 
-### A ticker
-###### Keeps printing out a count every 2 seconds, starting from 0 and incrementing it every 2 seconds. 
-
-    ; create the ticker template
-    (defactor ticker ((counter 0)) (m) 
-       (sleep 2) 
-       (pr counter)
-       (incf counter) 
-       (send self nil) 
-       next)
-       
-    ; Create an instance
-    (defparameter t1 (ticker))
-    
-    ; send a message (async)
-    (send t1 nil)
-    
-    ; to stop use
-    (stop-actor t1)
-
 ### A print actor
 ###### Prints the message which was sent to it. A very useful utility actor. 
 
@@ -60,6 +42,26 @@ http://www.cs.rpi.edu/~govinn/actors.pdf
     
     ; send values for printing
     (send printer "hello, world")
+
+### A ticker
+###### Keeps printing out a count every 2 seconds, starting from 0 and incrementing it every 2 seconds. 
+
+    ; create the ticker template
+    (defactor ticker ((counter 0)) (m) 
+       (sleep 2) 
+       (send printer counter)
+       (incf counter) 
+       (send self nil) 
+       next)
+       
+    ; Create an instance
+    (defparameter t1 (ticker))
+    
+    ; send a message (async)
+    (send t1 nil)
+    
+    ; to stop use
+    (stop-actor t1)
 
 ### A factorial computing actor
 ###### The name says it all :)
