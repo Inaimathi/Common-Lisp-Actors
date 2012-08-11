@@ -76,10 +76,10 @@ http://www.cs.rpi.edu/~govinn/actors.pdf
       next)
 
     ; create a new instance 
-    (setf f (fact))
+    (defparameter f (fact))
     
     ; send a value
-    (send f 4 print-actor)
+    (send f 4 printer)
 
 ### A nagger for fun 
 ###### Works only in Mac OS X. Keeps saying out aloud "please work" every 10 seconds :)
