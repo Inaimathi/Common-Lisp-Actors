@@ -26,7 +26,7 @@
 		when (watched-by self)
 		  ;; TODO -- Add customization to protocol, rather than always send-all
 		do (loop for target in (watched-by self)
-		      do (enqueue (list res) (in target)))))
+		      do (enqueue (list res) target))))
 	   :name name))))
 
 (defun make-actor (behavior name)
@@ -46,7 +46,10 @@
      (setf self (make-actor (lambda ,vars (progn ,@body)) ,(string name)))
      self))
 
-;;;;;;;;;; Manual sending methods
+;;;;;;;;;; Manual sending/queuing methods
+(defmethod enqueue (object (target actor))
+  (enqueue object (in target)))
+
 (defmethod send ((self message-queue) &rest message)
   "Creates a message sending thread to push a new message into the target message-queue."
   (bt:make-thread (lambda () (enqueue message self)))
