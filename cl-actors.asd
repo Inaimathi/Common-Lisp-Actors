@@ -6,8 +6,10 @@
 ;;;; @date   Thu Apr 5 2012
 ;;;; @brief asdf-install package file for cl-actors
 ;;;; @author Inaimathi <leo.zovic@gmail.com>
-;;;; @date   Jup 25 2012
+;;;; @date   July 25 2012
 ;;;; @brief queue system and output queues
+;;;; @date   March 22 2013
+;;;; @brief separated connection primitives from actors, re-factored define-actor
 ;;;;===========================================================================
 
 (defpackage #:cl-actors-asd (:use #:asdf #:cl))
@@ -21,7 +23,6 @@
   :depends-on (:bordeaux-threads)
   :serial t
   :components ((:file "package")
+	       (:file "util")
 	       (:file "queue")
                (:file "actors")))
-
-
