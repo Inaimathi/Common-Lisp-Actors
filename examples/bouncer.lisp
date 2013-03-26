@@ -1,10 +1,11 @@
-(defactor Bouncer (name) (other) 
-	   (send other self) 
-	   (pr (concatenate 'string name " : " "  bouncing")) 
-	   (sleep 3)
-	   next)
+(define-actor bouncer (name stream) (msg) 
+  (sleep 3)
+  (format stream "~a : bouncing~%" name)
+  :bounce)
 
-(setq b1 (Bouncer :name "Bouncer 1"))
-(setq b2 (Bouncer :name "Bouncer 2"))
+(defparameter b1 (bouncer :name "Bouncer 1" :stream *standard-output*))
+(defparameter b2 (bouncer :name "Bouncer 2" :stream *standard-output*))
 
-(send b1 b2)
+(chain b1 b2 b1)
+
+(send b1 :bounce)

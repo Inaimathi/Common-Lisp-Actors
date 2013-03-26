@@ -25,4 +25,4 @@
   :components ((:file "package")
 	       (:file "util")
 	       (:file "queue")
-               (:file "actors")))
+               (:file "cl-actors")))

@@ -10,6 +10,7 @@
 (defpackage #:cl-actors
   (:use #:cl #:bordeaux-threads)
   (:export 
-   #:defactor #:self #:next #:send #:send-receive #:stop-actor #:behav
+   #:actor #:define-actor #:self #:send #:send-receive #:stop-actor
+   #:link #:chain
    #:make-queue #:enqueue #:dequeue #:dequeue-no-hang 
                 #:full-p #:empty-p #:len #:messages))

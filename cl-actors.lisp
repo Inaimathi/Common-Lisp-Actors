@@ -23,7 +23,7 @@
 	   (lambda () 
 	     (loop 
 		for res = (apply behavior (dequeue in))
-		when (watched-by self)
+		when (and res (watched-by self))
 		  ;; TODO -- Add customization to protocol, rather than always send-all
 		do (loop for target in (watched-by self)
 		      do (enqueue (list res) target))))
@@ -84,9 +84,12 @@ can chain calls, but the initial thread will block until a response arrives)."
 ;;;;;;;;;; Connection functions
 (defun chain (&rest actors)
   "Takes a list of actors and links each to the next."
-  (assert (every (curry #'typep 'actor) actors))
-  (loop for (a1 a2) in actors 
+  (loop for (a1 a2) on actors
      while a2 do (link a1 a2)))
+
+(defmethod link ((selves list) (target actor))
+  "Causes each of [selves] to send its results to [target] from now on."
+  (mapcar (lambda (s) (link s target)) selves))
 
 (defmethod link ((self actor) (targets list))
   "Causes [self] to send its result to each [target] from now on."

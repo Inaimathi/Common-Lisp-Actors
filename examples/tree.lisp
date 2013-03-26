@@ -1,17 +1,17 @@
 (defun left (tree) (first tree))
 (defun right (tree) (second tree))
+
 ;Join 
-(defactor joincont (customer (firstnum nil)) (message)
+(define-actor joincont (customer (firstnum nil)) (message)
   (if (null firstnum)
-      (progn (setf firstnum message) next)
+      (progn (setf firstnum message))
       (progn (send customer (* firstnum message)) #'sink)))
 
-(defactor treeprod () (customer tree)
+(define-actor treeprod () (customer tree)
   (if (atom tree)
       (send customer tree)
       (let  ((newcust (joincont :customer customer))
 	     (lp (treeprod))
 	     (rp (treeprod)))
 	(send lp newcust (left tree))
-	(send rp newcust (right tree))))
-  next)
+	(send rp newcust (right tree)))))

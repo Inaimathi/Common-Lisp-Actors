@@ -1,7 +1,6 @@
-(defactor cell (c) (message)
+(define-actor cell (c) (message)
   (cond ((get? message) (send (cust message)  c))
-	((set? message) (setf c (contents message))))
-  next)
+	((set? message) (setf c (contents message)))))
 
 (defun make-set (val) `("set" ,val))
 (defun make-get (cust) `("get" ,cust)) 
