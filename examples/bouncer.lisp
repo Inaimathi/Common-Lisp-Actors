@@ -1,7 +1,7 @@
-(define-actor bouncer (name stream) (msg) 
-  (sleep 3)
-  (format stream "~a : bouncing~%" name)
-  :bounce)
+(define-actor bouncer (name stream) 
+  _ (progn (sleep 3)
+	   (format stream "~a : bouncing~%" name)
+	   :bounce))
 
 (defparameter b1 (bouncer :name "Bouncer 1" :stream *standard-output*))
 (defparameter b2 (bouncer :name "Bouncer 2" :stream *standard-output*))

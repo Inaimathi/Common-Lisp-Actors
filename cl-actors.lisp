@@ -22,7 +22,7 @@
 	  (bt:make-thread 
 	   (lambda () 
 	     (loop 
-		for res = (apply behavior (dequeue in))
+		for res = (funcall behavior (dequeue in))
 		when (and res (watched-by self))
 		  ;; TODO -- Add customization to protocol, rather than always send-all
 		do (loop for target in (watched-by self)
@@ -39,11 +39,17 @@
   "Stops the actor thread"
   (with-slots (thread) self (destroy-thread thread)))
 
-(defmacro define-actor (name state vars &body body)
+(defmacro define-actor (name state &body match-clauses)
   "Macro for creating actors with the behavior specified by body"
   `(defun ,name (&key (self) ,@state)
      (declare (ignorable self)) ;; You might not care about referencing self
-     (setf self (make-actor (lambda ,vars (progn ,@body)) ,(string name)))
+     (setf self 
+	   (make-actor 
+	    (lambda (message) 
+	      (match message
+		((list :ping target) (send target :pong (get-universal-time)))
+		,@(loop for (m b) on match-clauses by #'cddr collecting (list m b)))) 
+	    ,(string name)))
      self))
 
 ;;;;;;;;;; Manual sending/queuing methods
@@ -58,16 +64,6 @@
 (defmethod send ((self actor) &rest message)
   "`send`s a message to the IN quque of the target actor."
   (apply #'send (in self) message))
-
-(defmethod send-receive ((self actor) message &optional (timeout 0))
-  "Sends a message to an actor, then blocks waiting for a response.
-This method is intended to allow non-actor systems to interface with a network of actors.
-The actor it sends to should expect to be handed a return target,
-that target should eventually be sent a response message (not necessarily right away; the receiver
-can chain calls, but the initial thread will block until a response arrives)."
-  (let ((q (make-queue)))
-    (send self q message)
-    (car (dequeue q timeout))))
 
 ;;;;;;;;;; Sending Protocols
 (defmethod round-robin ((self actor))

@@ -1,21 +1,10 @@
-(define-actor sem ((h nil)) (m)
-  (if (get? m)
-      (if (null h)
-	  (progn (send (cust m) t) 
-		 (setf h (cust m)))
-	  (send (cust m) nil))
-      (when (release? m) (setf h nil))))
+(define-actor sem ((h nil)) 
+  (guard (list :get target) (null h)) (progn (send target t) 
+					     (setf h target))
+  (guard (list :get target)) (send target nil)
+  (list :release) (setf h nil))
 
-(define-actor customer (semaphore) (m)
-  (if m
-      (progn (pr "Critical code")
-	     (send semaphore (make-release)))
-      (send semaphore (make-get self))))
-	     
-(defun make-release () `("release" ))
-(defun make-get (cust) `("get" ,cust)) 
-
-(defun get? (message) (equal (first message) "get"))
-(defun release? (message) (equal (first message) "release"))
-
-(defun cust (message) (second message))
+(define-actor customer (semaphore) 
+  (list t) (progn (format t "Critical code")
+		  (send semaphore :release))
+  (list nil) (send semaphore :get self))

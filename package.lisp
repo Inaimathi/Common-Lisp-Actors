@@ -8,9 +8,14 @@
 (in-package #:cl-user)
 
 (defpackage #:cl-actors
-  (:use #:cl #:bordeaux-threads)
+  (:use #:cl #:bordeaux-threads #:optima)
   (:export 
-   #:actor #:define-actor #:self #:send #:send-receive #:stop-actor
-   #:link #:chain
+   ;; actor-related
+   #:actor #:define-actor #:stop-actor #:self 
+   #:in #:behavior #:watched-by #:thread
+   #:send #:link #:chain
+   ;; queue-related
    #:make-queue #:enqueue #:dequeue #:dequeue-no-hang 
-                #:full-p #:empty-p #:len #:messages))
+   #:full-p #:empty-p #:len #:messages
+   ;; pattern-related
+   #:match #:multiple-value-match))

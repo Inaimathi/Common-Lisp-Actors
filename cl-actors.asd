@@ -20,7 +20,7 @@
   :version     "1.0"
   :licence     "BSD"
   :description ""
-  :depends-on (:bordeaux-threads)
+  :depends-on (:bordeaux-threads :optima)
   :serial t
   :components ((:file "package")
 	       (:file "util")
