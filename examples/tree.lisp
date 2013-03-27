@@ -8,5 +8,5 @@
   (list target (list left right)) (let ((newcust (joincont :customer target))
 					(lp (treeprod))
 					(rp (treeprod)))
-				    (send lp newcust left)
-				    (send lp newcust right)))
+				    (send lp (list newcust left))
+				    (send lp (list newcust right))))

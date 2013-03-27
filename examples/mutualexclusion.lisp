@@ -7,4 +7,4 @@
 (define-actor customer (semaphore) 
   (list t) (progn (format t "Critical code")
 		  (send semaphore :release))
-  (list nil) (send semaphore :get self))
+  (list nil) (send semaphore (list :get self)))

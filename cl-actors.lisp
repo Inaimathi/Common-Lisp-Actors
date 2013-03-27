@@ -26,7 +26,7 @@
 		when (and res (watched-by self))
 		  ;; TODO -- Add customization to protocol, rather than always send-all
 		do (loop for target in (watched-by self)
-		      do (enqueue (list res) target))))
+		      do (enqueue res target))))
 	   :name name))))
 
 (defun make-actor (behavior name)
@@ -47,7 +47,7 @@
 	   (make-actor 
 	    (lambda (message) 
 	      (match message
-		((list :ping target) (send target :pong (get-universal-time)))
+		     ((list :ping target) (send target (list :pong (get-universal-time))))
 		,@(loop for (m b) on match-clauses by #'cddr collecting (list m b)))) 
 	    ,(string name)))
      self))
@@ -56,14 +56,13 @@
 (defmethod enqueue (object (target actor))
   (enqueue object (in target)))
 
-(defmethod send ((self message-queue) &rest message)
-  "Creates a message sending thread to push a new message into the target message-queue."
+(defmethod send ((self message-queue) message)
+  "Creates a message sending thread to push a new atom into the target message-queue."
   (bt:make-thread (lambda () (enqueue message self)))
   (values))
 
-(defmethod send ((self actor) &rest message)
-  "`send`s a message to the IN quque of the target actor."
-  (apply #'send (in self) message))
+(defmethod send ((self actor) message)
+  (send (in self) message))
 
 ;;;;;;;;;; Sending Protocols
 (defmethod round-robin ((self actor))

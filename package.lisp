@@ -18,4 +18,4 @@
    #:make-queue #:enqueue #:dequeue #:dequeue-no-hang 
    #:full-p #:empty-p #:len #:messages
    ;; pattern-related
-   #:match #:multiple-value-match))
+   #:match #:multiple-value-match #:guard))
