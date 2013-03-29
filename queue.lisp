@@ -58,7 +58,7 @@ If timeout is not zero, errors after timeout."
 If the target queue is empty, returns NIL.
 The second value specifies whether an item was found in queue (this is meant
 to disambiguate the situation where a queue contains the message NIL)"
-  (with-slots (messages lock flag len) queue
+  (with-slots (messages lock len) queue
     (with-lock-held (lock)
       (if messages
 	  (progn

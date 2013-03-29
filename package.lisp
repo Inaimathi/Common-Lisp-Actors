@@ -12,7 +12,7 @@
   (:export 
    ;; actor-related
    #:actor #:define-actor #:stop-actor #:self 
-   #:in #:behavior #:watched-by #:thread
+   #:in #:behavior #:targets #:thread
    #:send #:link #:chain
    ;; queue-related
    #:make-queue #:enqueue #:dequeue #:dequeue-no-hang 

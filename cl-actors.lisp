@@ -9,8 +9,8 @@
 	     :initform (error ":behavior must be specified")
 	     :accessor behavior
 	     :documentation "Behavior")
-   (watched-by :initarg :watched-by :initform nil 
-	     :accessor watched-by)
+   (targets :initarg :targets :initform nil 
+	    :accessor targets)
    (in :initform (make-queue) :accessor in
        :documentation "Queue of incoming messages")
    thread))
@@ -21,12 +21,15 @@
     (setf thread 
 	  (bt:make-thread 
 	   (lambda () 
-	     (loop 
-		for res = (funcall behavior (dequeue in))
-		when (and res (watched-by self))
-		  ;; TODO -- Add customization to protocol, rather than always send-all
-		do (loop for target in (watched-by self)
-		      do (enqueue res target))))
+	     (loop
+		(handler-case
+		    (let ((res (funcall behavior (dequeue in))))
+		      (loop for target in (targets self)
+			 do (enqueue res target)))
+		  (match-error (e)
+		    (format t "There isn't a match clause that fits. Do something more intelligent with unmatched messages.~%~a~%~%" e))
+		  (error (e)
+		    (format t "BLEARGH! I AM SLAIN! (this should kill the actor, and possibly call some fall-back mechanism)~%~a~%~%" e)))))
 	   :name name))))
 
 (defun make-actor (behavior name)
@@ -46,8 +49,8 @@
      (setf self 
 	   (make-actor 
 	    (lambda (message) 
-	      (match message
-		     ((list :ping target) (send target (list :pong (get-universal-time))))
+	      (ematch message
+		((list :ping target) (send target (list :pong (get-universal-time))))
 		,@(loop for (m b) on match-clauses by #'cddr collecting (list m b)))) 
 	    ,(string name)))
      self))
@@ -57,23 +60,24 @@
   (enqueue object (in target)))
 
 (defmethod send ((self message-queue) message)
-  "Creates a message sending thread to push a new atom into the target message-queue."
+  "Asynchronously enqueues a message in the target queue."
   (bt:make-thread (lambda () (enqueue message self)))
   (values))
 
 (defmethod send ((self actor) message)
+  "Asynchronously enqueues a message in the target actors' in-queue."
   (send (in self) message))
 
 ;;;;;;;;;; Sending Protocols
 (defmethod round-robin ((self actor))
-  (let ((ts (watched-by self)))
+  (let ((ts (targets self)))
     (lambda (msg)
-      (unless ts (setf ts (watched-by self)))
+      (unless ts (setf ts (targets self)))
       (list msg (pop ts)))))
 
 (defmethod send-all ((self actor))
   (lambda (msg)
-    (loop for target in (watched-by self)
+    (loop for target in (targets self)
        do (enqueue (list res) (in target)))))
 
 ;;;;;;;;;; Connection functions
@@ -94,4 +98,4 @@
 
 (defmethod link ((self actor) (target actor))
   "Causes [self] to send its results to [target] from now on."
-  (push target (watched-by self)))
+  (push target (targets self)))
