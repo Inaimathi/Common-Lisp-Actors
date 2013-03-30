@@ -11,8 +11,8 @@
   (:use #:cl #:bordeaux-threads #:optima)
   (:export 
    ;; actor-related
-   #:actor #:define-actor #:stop-actor #:self 
-   #:in #:behavior #:targets #:thread
+   #:actor #:define-actor #:make-behavior #:stop-actor #:self 
+   #:in #:behavior #:targets #:supervisors #:thread
    #:send #:link #:chain
    ;; queue-related
    #:make-queue #:enqueue #:dequeue #:dequeue-no-hang 
